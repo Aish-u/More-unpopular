@@ -25,12 +25,21 @@ def check_before_download(coordinates=None, size=5, sector=None, path=mypath, in
         return path_to_FFIs
 
 # We need to write code to automatically try different coordinates
+# Write a flag to decide if you want to generate plots
+ra = 64.525833
+dec = -63.615669
 
-path_to_FFIs = check_before_download(coordinates=SkyCoord(64.525833, -63.615669, unit="deg"), sector=1, size=50)
-path_to_FFIs = check_before_download(coordinates=SkyCoord(64.525833, -63.615669, unit="deg"), sector=2, size=50)
+#Need to code to pull down the correct sectors
+path_to_FFIs = check_before_download(coordinates=SkyCoord(ra, dec, unit="deg"), sector=1, size=50)
+path_to_FFIs = check_before_download(coordinates=SkyCoord(ra, dec, unit="deg"), sector=2, size=50)
 s1 = tess_cpm.Source(path_to_FFIs[0], remove_bad=True)
 #_ = s1.plot_cutout()
-s1.set_aperture(rowlims=[24, 26], collims=[24, 26])
+
+
+# Need a piece of code to grid over TESS
+delta_row = 0
+delta_col = -4
+s1.set_aperture(rowlims=[24-delta_row, 26-delta_row], collims=[24 - delta_col, 26 - delta_col])
 _ = s1.plot_cutout(rowlims=[20, 30], collims=[20, 30], show_aperture=True)
 _ = s1.plot_pix_by_pix()  # This method plots the raw flux values
 _ = s1.plot_pix_by_pix(data_type="normalized_flux")
