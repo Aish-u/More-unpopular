@@ -4,6 +4,7 @@ from astroquery.mast import Tesscut
 from astropy.io import fits
 from astropy.wcs import WCS
 import lightkurve as lk
+import PRF
 
 
 class CutoutData(object):
@@ -18,7 +19,8 @@ class CutoutData(object):
     """
 
     def __init__(self, path, remove_bad=True, verbose=True, 
-                 provenance='TessCut', quality=None, bkg_subtract=False, bkg_n=100):
+                 provenance='TessCut', quality=None, bkg_subtract=False, bkg_n=100,
+                 injection=False):
         self.file_path = path
         self.file_name = path.split("/")[-1]
         
@@ -32,6 +34,26 @@ class CutoutData(object):
                 self.time = hdu[1].data["TIME"]  # pylint: disable=no-member
                 self.fluxes = hdu[1].data["FLUX"]  # pylint: disable=no-member
                 self.flux_errors = hdu[1].data["FLUX_ERR"]  # pylint: disable=no-member
+                
+                
+                if injection:
+                    
+                    def make_gauss(times,mu=0,std=1.0):
+                        return np.exp(-(times-mu)**2/(2. * std**2))
+                    
+                    prf = PRF.TESS_PRF(self.camera,self.ccd,int(self.sector),113,298)
+                    resampled = prf.locate(20.0, 25.0, (np.shape(self.fluxes)[1],np.shape(self.fluxes)[2]))
+                    resampled0 = resampled * 1.0
+                    resampled = np.repeat(resampled,len(self.time)).reshape(np.shape(self.fluxes)[1],np.shape(self.fluxes)[2],len(self.time))
+                    resampled = np.swapaxes(resampled,0,-1)
+                    all_mult_scales = np.repeat(make_gauss(self.time, mu=np.mean(self.time)-10,std=5),50).reshape((len(self.time),50))
+                    all_mult_scales = np.repeat(all_mult_scales,50).reshape((len(self.time),50,50))
+                    all_mult_scales = all_mult_scales/np.mean(all_mult_scales)
+                    #sys.exit()
+                    print(resampled)
+                    self.fluxes = self.fluxes + 0.1 * resampled * np.percentile(self.fluxes,99) *all_mult_scales
+                
+                
                 if quality is None:
                     self.quality = hdu[1].data["QUALITY"]  # pylint: disable=no-member
                 else:
