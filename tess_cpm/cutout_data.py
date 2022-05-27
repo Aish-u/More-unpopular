@@ -20,7 +20,7 @@ class CutoutData(object):
 
     def __init__(self, path, remove_bad=True, verbose=True, 
                  provenance='TessCut', quality=None, bkg_subtract=False, bkg_n=100,
-                 injection=False):
+                 injection=False, injmu_percentile = 50, injduration = 5, injloc_x=25, injloc_y=25, injpeak=0.1):
         self.file_path = path
         self.file_name = path.split("/")[-1]
         
@@ -37,21 +37,17 @@ class CutoutData(object):
                 
                 
                 if injection:
-                    
                     def make_gauss(times,mu=0,std=1.0):
                         return np.exp(-(times-mu)**2/(2. * std**2))
-                    
                     prf = PRF.TESS_PRF(self.camera,self.ccd,int(self.sector),113,298)
-                    resampled = prf.locate(20.0, 25.0, (np.shape(self.fluxes)[1],np.shape(self.fluxes)[2]))
+                    resampled = prf.locate(25+injloc_x, 25+injloc_y, (np.shape(self.fluxes)[1],np.shape(self.fluxes)[2]))
                     resampled0 = resampled * 1.0
                     resampled = np.repeat(resampled,len(self.time)).reshape(np.shape(self.fluxes)[1],np.shape(self.fluxes)[2],len(self.time))
                     resampled = np.swapaxes(resampled,0,-1)
-                    all_mult_scales = np.repeat(make_gauss(self.time, mu=np.mean(self.time)-10,std=5),50).reshape((len(self.time),50))
+                    all_mult_scales = np.repeat(make_gauss(self.time, mu=np.percentile(self.time,injmu_percentile),std=injduration),50).reshape((len(self.time),50))
                     all_mult_scales = np.repeat(all_mult_scales,50).reshape((len(self.time),50,50))
                     all_mult_scales = all_mult_scales/np.mean(all_mult_scales)
-                    #sys.exit()
-                    print(resampled)
-                    self.fluxes = self.fluxes + 0.1 * resampled * np.percentile(self.fluxes,99) *all_mult_scales
+                    self.fluxes = self.fluxes + injpeak * resampled * np.percentile(self.fluxes,99) *all_mult_scales
                 
                 
                 if quality is None:

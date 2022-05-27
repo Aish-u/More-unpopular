@@ -17,10 +17,13 @@ class Source(object):
     """
 
     def __init__(self, path, remove_bad=True, verbose=True, 
-                 provenance='TessCut', quality=None, bkg_subtract=False, bkg_n=100):
+                 provenance='TessCut', quality=None, bkg_subtract=False, bkg_n=100, injection=False,
+                    injmu_percentile = 50, injduration = 5, injloc_x=25, injloc_y=25, injpeak=0.1):
         self.provenance = provenance
         self.cutout_data = CutoutData(path, remove_bad, verbose, 
-                                      self.provenance, quality, bkg_subtract, bkg_n)
+                                      self.provenance, quality, bkg_subtract, bkg_n, injection=injection,
+                                      injmu_percentile = injmu_percentile, injduration = injduration, 
+                                      injloc_x=injloc_x, injloc_y=injloc_y, injpeak=injpeak)
         self.time = self.cutout_data.time
         self.aperture = None
         self.models = None
