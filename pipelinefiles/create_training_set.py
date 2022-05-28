@@ -5,10 +5,30 @@ from astropy.coordinates import SkyCoord
 import tess_cpm
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
+
+
+
+glade = pd.read_csv("glade(13).txt",sep =" ", names=["Glade_no","PGC_no","GWGCName","HyperLedaName","2MASSName","WISExSCOSNAME","SDSS-DR16QName","Object-typeFlag","RA","Dec","B","B_err","B_Flag","B_Abs","J","J_err","H","H_err","K","K_err","W1","W1_err","W2","W2_err","W1_flag","B_J","B_J_err","z_helio","z_cmb","z_flag","v_err","z_err","d_L","d_L_err","dist_Flag","M_mass","M_mass_err","Merger_rate","Merger_rate_err"])
+g = glade.sort_values(by="d_L",ascending=True)  # sorts in terms of distance d_L closest to furthest
+cols = [0,1,8,9,32,33]
+g = g[g.columns[cols]]
+
+g = g.sample(n=2)
+
+#change type of RA and DEC from str to float
+Ra = g['RA'].to_list()
+Dec = g['Dec'].to_list()
+#writes a new ordered file to look at if needed. remove '#' from the code below to have it write a txt file
+#g.to_csv(r'Ordered_glade.txt', header=None, index=None, sep='\t', mode='a')
+
+# prints the random sample.
+print(g) 
 
 #Set the path to put the giant fits files in - DONT put these on github!
 mypath = './fits_files/'
+
 
 def check_before_download(coordinates=None, size=5, sector=None, path=mypath, inflate=True, objectname=None, force_download=False):
 
@@ -27,24 +47,26 @@ def check_before_download(coordinates=None, size=5, sector=None, path=mypath, in
 
 # We need to write code to automatically try different coordinates
 # Write a flag to decide if you want to generate plots
-ra = 64.525833
-dec = -63.615669
-injmu_percentile = np.random.uniform(0,100)
-injduration = np.random.uniform(1,10)
-injloc_x=np.random.uniform(-5,5)
-injloc_y=np.random.uniform(-5,5)
-injpeak=10.**np.random.uniform(-3,-1)
+#we want to pull a random sample and input RA and DEC from that. 
 
-injmu_percentile = 20
-injduration = 2
-injloc_x = 0 #equal to negative row
-injloc_y = 4 #equal to negative col
-injpeak = 0.002
 
-#Need to code to pull down the correct sectors
-path_to_FFIs = check_before_download(coordinates=SkyCoord(ra, dec, unit="deg"), sector=1, size=50)
-path_to_FFIs = check_before_download(coordinates=SkyCoord(ra, dec, unit="deg"), sector=2, size=50)
-s1 = tess_cpm.Source(path_to_FFIs[0], remove_bad=True, injection=True, injmu_percentile=injmu_percentile,
+for i, j in zip(Ra, Dec):
+  ra =i
+  dec=j
+  injmu_percentile = np.random.uniform(0,100)
+  injduration = np.random.uniform(1,10)
+  injloc_x=np.random.uniform(-5,5)
+  injloc_y=np.random.uniform(-5,5)
+  injpeak=10.**np.random.uniform(-3,-1)
+  injmu_percentile = 20
+  injduration = 2
+  injloc_x = 0 #equal to negative row
+  injloc_y = 4 #equal to negative col
+  injpeak = 0.002
+
+  path_to_FFIs = check_before_download(coordinates=SkyCoord(ra, dec, unit="deg"), size=50)
+  path_to_FFIs = check_before_download(coordinates=SkyCoord(ra, dec, unit="deg"), size=50)
+  s1 = tess_cpm.Source(path_to_FFIs[0], remove_bad=True, injection=True, injmu_percentile=injmu_percentile,
                     injduration=injduration,injloc_x=injloc_x,injloc_y=injloc_y,injpeak=injpeak)
 
 
