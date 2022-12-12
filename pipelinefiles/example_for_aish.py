@@ -9,7 +9,7 @@ def get_training_data(load=False, datafile ='test.npz'):
     
     if not load:
         # This grabs the training data files from the appropriate directory
-        mypath = './training_data/'
+        mypath = 'C:/Users/araai/OneDrive/Desktop/TESS/More-unpopular/pipelinefiles/training_data/'
         training_data_files = [f for f in listdir(mypath) if isfile(join(mypath, f))]
         
         training_t = []

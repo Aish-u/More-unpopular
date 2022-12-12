@@ -27,7 +27,7 @@ Dec = g['Dec'].to_list()
 print(g) 
 
 #Set the path to put the giant fits files in - DONT put these on github!
-mypath = './fits_files/'
+mypath = 'C:/Users/araai/OneDrive/Desktop/TESS/More-unpopular/pipelinefiles/fits_files/'
 
 
 def check_before_download(coordinates=None, size=5, sector=None, path=mypath, inflate=True, objectname=None, force_download=False):
